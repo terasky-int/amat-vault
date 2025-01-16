@@ -1,0 +1,197 @@
+global:
+  enabled: true
+  openshift: true
+  tlsDisable: false
+  resources:
+    requests:
+        memory: 256Mi
+        cpu: 250m
+    limits:
+        memory: 256Mi
+        cpu: 250m
+
+injector:
+  enabled: true
+  replicas: 1
+
+  # image sets the repo and tag of the vault-k8s image to use for the injector.
+  image:
+    repository: "registry.connect.redhat.com/hashicorp/vault-k8s"
+    tag: "1.5.0-ubi"
+
+  # agentImage sets the repo and tag of the Vault image to use for the Vault Agent
+  # containers.  This should be set to the official Vault image.  Vault 1.3.1+ is
+  # required.
+  agentImage:
+    repository: "registry.connect.redhat.com/hashicorp/vault-enterprise"
+    tag: "1.16.14-ent-ubi"
+
+
+server:
+  enabled: true
+  
+  # [Enterprise Only] This value refers to a Kubernetes secret that you have
+  # created that contains your enterprise license. If you are not using an
+  # enterprise image or if you plan to introduce the license key via another
+  # route, then leave secretName blank ("") or set it to null.
+  # Requires Vault Enterprise 1.8 or later.
+  enterpriseLicense:
+    # The name of the Kubernetes secret that holds the enterprise license. The
+    # secret must be in the same namespace that Vault is installed into.
+    secretName: "vault-enterprise-license"
+    # secretKey: "license"
+
+  image:
+    repository: "registry.connect.redhat.com/hashicorp/vault-enterprise"
+    tag: "1.16.14-ent-ubi"
+
+  updateStrategyType: "OnDelete"
+
+  resources:
+    requests:
+      memory: 8Gi
+      cpu: 2000m
+    limits:
+      memory: 16Gi
+      cpu: 2000m
+
+  # OpenShift only - create a route to expose the service
+  # By default the created route will be of type passthrough
+  route:
+    enabled: true
+
+    # When HA mode is enabled and K8s service registration is being used,
+    # configure the route to point to the Vault active service.
+    activeService: true
+
+    labels: {}
+    annotations: {}
+    host: chart-example.local # CHANGE ME
+    # tls will be passed directly to the route's TLS config, which
+    # can be used to configure other termination methods that terminate
+    # TLS at the router
+    tls:
+      termination: passthrough
+
+  authDelegator:
+    enabled: true
+
+  # Configure the logging verbosity for the Vault server.
+  # Supported log levels include: trace, debug, info, warn, error
+  logLevel: "info"
+
+  # For HA configuration and because we need to manually init the vault,
+  # we need to define custom readiness/liveness Probe settings
+  readinessProbe:
+    enabled: true
+    path: "/v1/sys/health?uninitcode=204"
+  livenessProbe:
+    enabled: true
+    path: "/v1/sys/health?standbyok=true"
+    initialDelaySeconds: 60
+
+  dataStorage:
+    enabled: true
+    # Size of the PVC created
+    size: 50Gi
+    # Location where the PVC will be mounted.
+    mountPath: "/vault/data"
+    # Name of the storage class to use.  If null it will use the
+    # configured default Storage Class.
+    storageClass: null
+    # Access Mode of the storage device being used for the PVC
+    accessMode: ReadWriteOnce
+    # Annotations to apply to the PVC
+    annotations: {}
+    # Labels to apply to the PVC
+    labels: {}
+
+  auditStorage:
+    enabled: true
+
+  extraEnvironmentVars:
+    VAULT_CACERT: /vault/userconfig/vault-ha-tls/vault.ca
+    VAULT_TLSCERT: /vault/userconfig/vault-ha-tls/vault.crt
+    VAULT_TLSKEY: /vault/userconfig/vault-ha-tls/vault.key
+  
+  volumes:
+    - name: userconfig-vault-ha-tls
+      secret:
+        defaultMode: 420
+        secretName: vault-ha-tls
+  
+  volumeMounts:
+    - mountPath: /vault/userconfig/vault-ha-tls
+      name: userconfig-vault-ha-tls
+      readOnly: true
+
+
+  # Run Vault in "HA" mode. There are no storage requirements unless the audit log
+  # persistence is required.  In HA mode Vault will configure itself to use Consul
+  # for its storage backend.  The default configuration provided will work the Consul
+  # Helm project by default.  It is possible to manually configure Vault to use a
+  # different HA backend.
+  ha:
+    enabled: true
+    replicas: 3
+    raft: 
+      enabled: true
+      setNodeId: true
+      config: |
+        cluster_name = "vault-integrated-storage"
+        disable_mlock = true
+
+        storage "raft" {
+          path    = "/vault/data/"
+          retry_join {
+            leader_api_addr = "https://vault-0.vault-internal:8200"
+            leader_ca_cert_file = "/vault/userconfig/tls-ca/ca.crt"
+            leader_client_cert_file = "/vault/userconfig/tls-server/tls.crt"
+            leader_client_key_file = "/vault/userconfig/tls-server/tls.key"
+          }
+          retry_join {
+            leader_api_addr = "https://vault-1.vault-internal:8200"
+            leader_ca_cert_file = "/vault/userconfig/tls-ca/ca.crt"
+            leader_client_cert_file = "/vault/userconfig/tls-server/tls.crt"
+            leader_client_key_file = "/vault/userconfig/tls-server/tls.key"
+          }
+          retry_join {
+            leader_api_addr = "https://vault-2.vault-internal:8200"
+            leader_ca_cert_file = "/vault/userconfig/tls-ca/ca.crt"
+            leader_client_cert_file = "/vault/userconfig/tls-server/tls.crt"
+            leader_client_key_file = "/vault/userconfig/tls-server/tls.key"
+          }
+        }
+
+        listener "tcp" {
+          tls_disable = 0
+          address = "[::]:8200"
+          cluster_address = "[::]:8201"
+          
+          tls_cert_file = "/vault/userconfig/vault-ha-tls/vault.crt"
+          tls_key_file  = "/vault/userconfig/vault-ha-tls/vault.key"
+          tls_client_ca_file = "/vault/userconfig/vault-ha-tls/vault.ca"
+
+          # Enable unauthenticated metrics access (necessary for Prometheus Operator)
+          telemetry {
+            unauthenticated_metrics_access = "true"
+          }
+        }
+        
+        service_registration "kubernetes" {}
+
+        ui = true
+
+        # Configuration for enabling Prometheus metrics in your config.
+        telemetry {
+          prometheus_retention_time = "30s"
+          disable_hostname = true
+        }
+
+
+# Vault UI
+ui:
+  enabled: true
+  serviceType: "ClusterIP" # Or LoadBalancer
+  externalPort: 8200
+  annotations: {}
