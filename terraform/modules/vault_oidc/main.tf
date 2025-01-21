@@ -18,13 +18,14 @@ resource "vault_jwt_auth_backend" "oidc" {
 
 resource "vault_jwt_auth_backend_role" "role" {
   for_each       = var.roles
-  
+
   backend        = vault_jwt_auth_backend.oidc.path
   role_name      = each.key
   token_policies = each.value.token_policies
 
   allowed_redirect_uris = [
-    "${var.vault_addr}/ui/vault/auth/${vault_jwt_auth_backend.oidc.path}/oidc/callback",
+    "${replace(var.vault_addr, ":8200", ":8250")}/ui/vault/auth/${vault_jwt_auth_backend.oidc.path}/oidc/callback",
+    "${replace(var.vault_addr, ":8200", ":8250")}/oidc/callback",
   ]
 
   user_claim      = "sub"
