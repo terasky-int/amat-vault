@@ -1,0 +1,49 @@
+# Global Variables
+vault_addr = "http://127.0.0.1:8200"
+
+# Audit Variables
+# audit_devices = [
+#   {
+#     description = "A local audit device."
+#     type        = "file"
+#     options = {
+#       file_path = "/dev/null"
+#     }
+#   },
+#   {
+#     description = "A socket audit device."
+#     type        = "socket"
+#     path        = "app_socket"
+#     local       = false
+#     options = {
+#       address     = "socket:8000"
+#       socket_type = "tcp"
+#     }
+#   },
+#   {
+#     description = "A syslog audit device."
+#     type        = "syslog"
+#     local       = false
+#     options = {
+#       facility = "AUTH"
+#       tag      = "vault"
+#     }
+#   }
+# ]
+
+# OIDC Variables
+oidc_client_id       = "hashicorppoc"
+oidc_client_secret   = "SecretHere"
+oidc_bound_audiences = ["hashicorppoc"]
+oidc_discovery_url   = "https://myloginqa.amat.com:8080"
+
+oidc_roles = {
+  admin = {
+    token_policies = ["root"]
+    bound_groups   = ["vault_admins"]
+  },
+  devs = {
+    token_policies = ["default"]
+    bound_groups   = ["vault_devs"]
+  }
+}
