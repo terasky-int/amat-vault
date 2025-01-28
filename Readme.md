@@ -163,3 +163,6 @@ helm search repo hashicorp/vault --versions
 ```bash
 helm upgrade -i vault hashicorp/vault --version 0.29.0 -f values.yaml --namespace vault --create-namespace
 ```
+
+<!-- https://www.hashicorp.com/resources/policies-vault -->
+<!-- https://github.com/btkrausen/hashicorp/blob/master/vault/policies/namespace-admin.hcl -->

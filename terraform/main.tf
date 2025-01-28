@@ -25,3 +25,14 @@ module "vault_oidc" {
   bound_audiences = var.oidc_bound_audiences
   roles           = var.oidc_roles
 }
+
+#######################################
+# Vault Policies
+#######################################
+
+resource "vault_policy" "policy" {
+  for_each = fileset("policies", "*.hcl")  # Get all .hcl files in the "policies" directory
+
+  name   = replace(each.value, ".hcl", "")
+  policy = file("policies/${each.value}")
+}
