@@ -8,6 +8,14 @@ Before installing the vault preform the following steps:
 
 oc create secret generic vault-enterprise-license --from-file=license=./path/to/your/vault.hclic --namespace vault
 
+## Setup Autounseal Secret
+oc create secret generic azure-vault-secret \
+  --from-literal=AZURE_TENANT_ID="<AZURE_TENANT_ID>" \
+  --from-literal=AZURE_CLIENT_ID="<AZURE_CLIENT_ID>" \
+  --from-literal=AZURE_CLIENT_SECRET="<AZURE_CLIENT_SECRET>" \
+  --from-literal=VAULT_AZUREKEYVAULT_VAULT_NAME="<VAULT_AZUREKEYVAULT_VAULT_NAME>" \
+  --from-literal=VAULT_AZUREKEYVAULT_KEY_NAME="<VAULT_AZUREKEYVAULT_KEY_NAME>"
+
 
 ---
 
