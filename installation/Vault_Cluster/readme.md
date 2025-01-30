@@ -1,15 +1,58 @@
-https://github.com/hashicorp/terraform-aws-vault/blob/master/modules/install-vault/install-vault
+# Vault Cluster on vm
 
-https://releases.hashicorp.com/vault/1.16.14+ent/vault_1.16.14+ent_linux_amd64.zip
+Based on:
+1. [install-vault](https://github.com/hashicorp/terraform-aws-vault/blob/master/modules/install-vault/README.md)
+2. [run-vault](https://github.com/hashicorp/terraform-aws-vault/blob/master/modules/run-vault/README.md)
 
-
-add step to create service and step that gets as a var the hcl vault config file and you know
-
-<!-- Install options  -->
+## Install options 
 bash install_vault.sh --version 1.16.14+ent 
 bash install_vault.sh --download-url https://releases.hashicorp.com/vault/1.16.14+ent/vault_1.16.14+ent_linux_amd64.zip
 bash install_vault.sh 
 
+## Run
+Create the files:
+* vault_config.hcl
+* vault.env
+* tls_cert_file, tls_key_file and place in /opt/vault/tls and chown it for vault
+* place your license in /opt/vault/config/license.hclic and chown it for vault
 
-<!-- Run -->
-sudo bash run_vault.sh --path-to-config ./vault_config.hcl 
+sudo bash run_vault.sh --path-to-config ./vault_config.hcl --path-to-env-file ./vault.env
+
+
+# Hardining
+
+For [Documantation](https://developer.hashicorp.com/vault/docs/concepts/production-hardening?productSlug=vault&tutorialSlug=operations&tutorialSlug=)
+
+## Turn of swap?
+
+To check if swap is on
+```bash
+cat /proc/swaps # check
+vmstat # check
+sudo swapon --show # check
+```
+
+To turn it off
+```bash
+sudo swapoff -a # do
+# and delete all swap from: /etc/fstab
+```
+
+## Turn of histry - ? 
+add to /etc/profile and /etc/bashrc:
+
+```bash
+unset HISTFILE
+set +o history
+export HISTSIZE=0
+export HISTFILESIZE=0
+```
+
+then run 
+
+```bash
+source /etc/bashrc
+source /etc/profile
+```
+
+## For auto rotate secret in azure click [here](https://learn.microsoft.com/en-us/azure/key-vault/secrets/tutorial-rotation-dual?tabs=azure-cli)

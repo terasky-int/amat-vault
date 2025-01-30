@@ -4,6 +4,7 @@
 set -e
 
 readonly VAULT_CONFIG_FILE="default.hcl"
+readonly VAULT_ENV_FILE="default.env"
 readonly VAULT_PID_FILE="vault-pid"
 readonly VAULT_TOKEN_FILE="vault-token"
 readonly SYSTEMD_CONFIG_PATH="/etc/systemd/system/vault.service"
@@ -88,30 +89,27 @@ function generate_vault_config {
   local -r path_to_config="$1"
   local -r config_dir="$2"
   local -r user="$3"
+  local -r path_to_env="$4"
   local -r config_path="$config_dir/$VAULT_CONFIG_FILE"
-
-#   vault_version_at_least "$config_path" "$ui_config"
-
-#   echo -e "$auto_unseal_config" >> "$config_path"
-#   echo -e "$listener_config" >> "$config_path"
-#   echo -e "$s3_config" >> "$config_path"
-#   echo -e "$vault_storage_backend" >> "$config_path"
-#   echo -e "$service_registration" >> "$config_path"
+  local -r env_path="$config_dir/$VAULT_ENV_FILE"
 
   if [[ -f "$path_to_config" ]]; then
     echo "Using local file: $path_to_config"
 
-    if [[ -f "$config_path" ]]; then
-        read -p "File $config_path already exists. Overwrite? (y/n): " choice
-        case "$choice" in
-        y|Y ) echo "Overwriting existing file...";;
-        n|N ) echo "Vault config stayed the same."; exit 0;;
-        * ) echo "Invalid choice."; exit 1;;
-        esac
-    fi
+    # if [[ -f "$config_path" ]]; then
+    #     read -p "File $config_path already exists. Overwrite? (y/n): " choice
+    #     case "$choice" in
+    #     y|Y ) echo "Overwriting existing file...";;
+    #     n|N ) echo "Vault config stayed the same."; exit 0;;
+    #     * ) echo "Invalid choice."; exit 1;;
+    #     esac
+    # fi
     
     sudo cp -f "$path_to_config" "$config_path"
+    sudo cp -f "$path_to_env" "$env_path"
+
     sudo chown "$user:$user" "$config_path"
+    sudo chown "$user:$user" "$env_path"
   else
     echo "Error: $path_to_config file not found."
     exit 1
@@ -152,6 +150,7 @@ EOF
 
   local -r service_config=$(cat <<EOF
 [Service]
+EnvironmentFile=$vault_config_file_or_dir/$VAULT_ENV_FILE
 User=$vault_user
 Group=$vault_user
 ProtectSystem=full
@@ -171,10 +170,10 @@ Restart=on-failure
 RestartSec=5
 TimeoutStopSec=30
 StartLimitInterval=60
-StartLimitIntervalSec=60
 StartLimitBurst=3
 LimitNOFILE=65536
 LimitMEMLOCK=infinity
+LimitCORE=0
 
 EOF
 )
@@ -214,6 +213,7 @@ function get_owner_of_path {
 
 function run {
   local path_to_config=""
+  local path_to_env=""
   local config_dir="/opt/vault/config"
   local bin_dir="/usr/local/bin"
   local log_level="$DEFAULT_LOG_LEVEL"
@@ -229,6 +229,11 @@ function run {
         --path-to-config)
         assert_not_empty "$key" "$2"
         path_to_config="$2"
+        shift
+        ;;
+    --path-to-env-file)
+        assert_not_empty "$key" "$2"
+        path_to_env="$2"
         shift
         ;;
       --config-dir)
@@ -299,7 +304,8 @@ function run {
   generate_vault_config \
     "$path_to_config" \
     "$config_dir" \
-    "$user"
+    "$user" \
+    "$path_to_env"
 
   generate_systemd_config "$SYSTEMD_CONFIG_PATH" "$config_dir" "$bin_dir" "$log_level" "$systemd_stdout" "$systemd_stderr" "$user"
   start_vault
