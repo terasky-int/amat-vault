@@ -116,26 +116,26 @@ server:
   
   # extraSecretEnvironmentVars is a list of extra environment variables to set with the stateful set.
   # These variables take value from existing Secret objects.
-  # extraSecretEnvironmentVars:
-  # - envName: AZURE_TENANT_ID
-  #   secretName: azure-vault-secret
-  #   secretKey: AZURE_TENANT_ID
+  extraSecretEnvironmentVars:
+  - envName: AZURE_TENANT_ID
+    secretName: azure-vault-secret
+    secretKey: AZURE_TENANT_ID
 
-  # - envName: AZURE_CLIENT_ID
-  #   secretName: azure-vault-secret
-  #   secretKey: AZURE_CLIENT_ID
+  - envName: AZURE_CLIENT_ID
+    secretName: azure-vault-secret
+    secretKey: AZURE_CLIENT_ID
 
-  # - envName: AZURE_CLIENT_SECRET
-  #   secretName: azure-vault-secret
-  #   secretKey: AZURE_CLIENT_SECRET
+  - envName: AZURE_CLIENT_SECRET
+    secretName: azure-vault-secret
+    secretKey: AZURE_CLIENT_SECRET
 
-  # - envName: VAULT_AZUREKEYVAULT_VAULT_NAME
-  #   secretName: azure-vault-secret
-  #   secretKey: VAULT_AZUREKEYVAULT_VAULT_NAME
+  - envName: VAULT_AZUREKEYVAULT_VAULT_NAME
+    secretName: azure-vault-secret
+    secretKey: VAULT_AZUREKEYVAULT_VAULT_NAME
 
-  # - envName: VAULT_AZUREKEYVAULT_KEY_NAME
-  #   secretName: azure-vault-secret
-  #   secretKey: VAULT_AZUREKEYVAULT_KEY_NAME
+  - envName: VAULT_AZUREKEYVAULT_KEY_NAME
+    secretName: azure-vault-secret
+    secretKey: VAULT_AZUREKEYVAULT_KEY_NAME
 
 
   volumes:
