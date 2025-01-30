@@ -1,5 +1,4 @@
 #!/bin/bash
-# This script is used to configure and run Vault on an AWS server.
 
 set -e
 
