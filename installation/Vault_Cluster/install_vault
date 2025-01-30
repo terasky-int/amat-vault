@@ -1,10 +1,4 @@
 #!/bin/bash
-# This script can be used to install Vault and its dependencies. This script has been tested with the following
-# operating systems:
-#
-# 1. Ubuntu 16.04
-# 2. Ubuntu 18.04
-# 3. Amazon Linux 2
 
 set -e
 
@@ -28,7 +22,7 @@ function print_usage {
   echo "Options:"
   echo
   echo -e "  --version\t\tThe version of Vault to install. Optional if download-url is provided."
-  echo -e "  --download-url\t\tUrl to exact Vault package to be installed. Optional if version is provided."
+  echo -e "  --download-url\t\tUrl to exact Vault package to be installed default is take from local file in /tmp/vault.zip. Optional if version is provided."
   echo -e "  --path\t\tThe path where Vault should be installed. Optional. Default: $DEFAULT_INSTALL_PATH."
   echo -e "  --user\t\tThe user who will own the Vault install directories. Optional. Default: $DEFAULT_VAULT_USER."
   echo -e "  --skip-package-update\t\tSkip yum/apt updates. Optional. Only recommended if you already ran yum update or apt-get update yourself. Default: $DEFAULT_SKIP_PACKAGE_UPDATE."
@@ -84,29 +78,29 @@ function assert_either_or {
   fi
 }
 
-# # A retry function that attempts to run a command a number of times and returns the output
-# function retry {
-#   local -r cmd="$1"
-#   local -r description="$2"
+# A retry function that attempts to run a command a number of times and returns the output
+function retry {
+  local -r cmd="$1"
+  local -r description="$2"
 
-#   for i in $(seq 1 5); do
-#     log_info "$description"
+  for i in $(seq 1 5); do
+    log_info "$description"
 
-#     # The boolean operations with the exit status are there to temporarily circumvent the "set -e" at the
-#     # beginning of this script which exits the script immediatelly for error status while not losing the exit status code
-#     output=$(eval "$cmd") && exit_status=0 || exit_status=$?
-#     log_info "$output"
-#     if [[ $exit_status -eq 0 ]]; then
-#       echo "$output"
-#       return
-#     fi
-#     log_warn "$description failed. Will sleep for 10 seconds and try again."
-#     sleep 10
-#   done;
+    # The boolean operations with the exit status are there to temporarily circumvent the "set -e" at the
+    # beginning of this script which exits the script immediatelly for error status while not losing the exit status code
+    output=$(eval "$cmd") && exit_status=0 || exit_status=$?
+    log_info "$output"
+    if [[ $exit_status -eq 0 ]]; then
+      echo "$output"
+      return
+    fi
+    log_warn "$description failed. Will sleep for 10 seconds and try again."
+    sleep 10
+  done;
 
-#   log_error "$description failed after 5 attempts."
-#   exit $exit_status
-# }
+  log_error "$description failed after 5 attempts."
+  exit $exit_status
+}
 
 function has_yum {
   [[ -n "$(command -v yum)" ]]
@@ -130,9 +124,7 @@ function install_dependencies {
       log_info "Running yum update"
       sudo yum update -y
     fi
-    sudo yum install -y -q curl unzip jq wget unzip bind-utils ruby rubygems ntp
-    sudo systemctl start ntpd.service
-    sudo systemctl enable ntpd.service
+    sudo yum install -y -q curl unzip jq wget unzip bind-utils ruby rubygems 
   else
     log_error "Could not find apt-get or yum. Cannot install dependencies on this OS."
     exit 1
@@ -152,22 +144,22 @@ function create_vault_user {
   else
 
     if $(has_yum); then
-        sudo /usr/sbin/groupadd --force --system $${USER_GROUP}
-
         USER_NAME=$DEFAULT_VAULT_USER
         USER_COMMENT="HashiCorp Vault user"
         USER_GROUP=$DEFAULT_VAULT_USER
         USER_HOME="/srv/vault"
+        
+        sudo /usr/sbin/groupadd --force --system $USER_GROUP
 
         if ! getent passwd $${USER_NAME} >/dev/null ; then
             sudo /usr/sbin/adduser \
             --system \
-            --gid $${USER_GROUP} \
-            --home $${USER_HOME} \
+            --gid $USER_GROUP \
+            --home $USER_HOME \
             --no-create-home \
-            --comment "$${USER_COMMENT}" \
+            --comment "$USER_COMMENT" \
             --shell /bin/false \
-            $${USER_NAME}  >/dev/null
+            $USER_NAME  >/dev/null
         fi
     else
        sudo useradd --system "$username"
@@ -199,43 +191,68 @@ function create_vault_install_paths {
 function fetch_binary {
   local -r version="$1"
   local download_url="$2"
+  
+  # If the download is from a local file, check if it exists and skip the download if it does
+  if [[ "$download_url" == "local" && -z "$version" ]]; then
+    if [[ -f "$DOWNLOAD_PACKAGE_PATH" ]]; then
+      echo "Using local file: $DOWNLOAD_PACKAGE_PATH"
+    else
+      echo "Error: Local file $DOWNLOAD_PACKAGE_PATH not found."
+      exit 1
+    fi
+  else
+    if [[ "$download_url" == "local" && -n "$version" ]];  then
+        download_url="https://releases.hashicorp.com/vault/${version}/vault_${version}_linux_amd64.zip"
+    fi    
 
-  if [[ -z "$download_url" && -n "$version" ]];  then
-    download_url="https://releases.hashicorp.com/vault/${version}/vault_${version}_linux_amd64.zip"
+    retry \
+        "sudo curl -o '$DOWNLOAD_PACKAGE_PATH' '$download_url' --location --silent --fail --show-error" \
+        "Downloading Vault to $DOWNLOAD_PACKAGE_PATH"
   fi
 
-  retry \
-    "curl -o '$DOWNLOAD_PACKAGE_PATH' '$download_url' --location --silent --fail --show-error" \
-    "Downloading Vault to $DOWNLOAD_PACKAGE_PATH"
 }
 
 function install_binary {
   local -r install_path="$1"
   local -r username="$2"
+  local -r download_url="$3"
+  local -r version="$4"
 
   local -r bin_dir="$install_path/bin"
   local -r vault_dest_path="$bin_dir/vault"
-  local -r run_vault_dest_path="$bin_dir/run-vault"
+#   local -r run_vault_dest_path="$bin_dir/run-vault"
 
   unzip -d /tmp "$DOWNLOAD_PACKAGE_PATH"
+  
+  
+  log_info "Moving Vault binary to $SYSTEM_BIN_DIR"
+  sudo mv "/tmp/vault" "$SYSTEM_BIN_DIR/vault"
+  sudo chown "$username:$username" "$SYSTEM_BIN_DIR/vault"
+  sudo chmod a+x "$SYSTEM_BIN_DIR/vault"
 
-  log_info "Moving Vault binary to $vault_dest_path"
-  sudo mv "/tmp/vault" "$vault_dest_path"
-  sudo chown "$username:$username" "$vault_dest_path"
-  sudo chmod a+x "$vault_dest_path"
-
-  local -r symlink_path="$SYSTEM_BIN_DIR/vault"
-  if [[ -f "$symlink_path" ]]; then
-    log_info "Symlink $symlink_path already exists. Will not add again."
-  else
-    log_info "Adding symlink to $vault_dest_path in $symlink_path"
-    sudo ln -s "$vault_dest_path" "$symlink_path"
+#   local -r symlink_path="$SYSTEM_BIN_DIR/vault"
+#   if [[ -f "$symlink_path" ]]; then
+#     log_info "Symlink $symlink_path already exists. Will not add again."
+#   else
+#     log_info "Adding symlink to $vault_dest_path in $symlink_path"
+#     sudo ln -s "$vault_dest_path" "$symlink_path"
+#   fi
+  
+  # Remove garbage
+  if [[ "$download_url" != "local" || -n "$version" ]]; then
+    local date=$(date +"%Y-%m-%d %H:%M:%S")
+    sudo mv "$DOWNLOAD_PACKAGE_PATH" "/tmp/vault-${date}.zip"
   fi
+  
+  sudo rm -f /tmp/vault
+  sudo rm -f /tmp/TermsOfEvaluation.txt
+  sudo rm -f /tmp/EULA.txt
 
-  log_info "Copying Vault run script to $run_vault_dest_path"
-  sudo cp "$SCRIPT_DIR/../run-vault" "$run_vault_dest_path"
-  sudo chown "$username:$username" "$run_vault_dest_path"
-  sudo chmod a+x "$run_vault_dest_path"
+
+#   log_info "Copying Vault run script to $run_vault_dest_path"
+#   sudo cp "$SCRIPT_DIR/run-vault" "$run_vault_dest_path"
+#   sudo chown "$username:$username" "$run_vault_dest_path"
+#   sudo chmod a+x "$run_vault_dest_path"
 }
 
 # For more info, see: https://www.vaultproject.io/docs/configuration/#disable_mlock
@@ -247,7 +264,7 @@ function configure_mlock {
 
 function install {
   local version=""
-  local download_url=""
+  local download_url="local"
   local path="$DEFAULT_INSTALL_PATH"
   local user="$DEFAULT_VAULT_USER"
   local skip_package_update="$DEFAULT_SKIP_PACKAGE_UPDATE"
@@ -299,7 +316,7 @@ function install {
   create_vault_user "$user"
   create_vault_install_paths "$path" "$user"
   fetch_binary "$version" "$download_url"
-  install_binary "$path" "$user"
+  install_binary "$path" "$user" "$download_url" "$version"
   configure_mlock
 
 
