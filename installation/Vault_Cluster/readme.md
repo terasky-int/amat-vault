@@ -4,6 +4,10 @@ Based on:
 1. [install-vault](https://github.com/hashicorp/terraform-aws-vault/blob/master/modules/install-vault/README.md)
 2. [run-vault](https://github.com/hashicorp/terraform-aws-vault/blob/master/modules/run-vault/README.md)
 
+## Make sure before
+1. Binary exists
+2. if /usr/local/bin in PATH
+
 ## Install options 
 bash install_vault.sh --version 1.16.14+ent 
 bash install_vault.sh --download-url https://releases.hashicorp.com/vault/1.16.14+ent/vault_1.16.14+ent_linux_amd64.zip
@@ -14,7 +18,7 @@ Create the files:
 * vault_config.hcl
 * vault.env
 * tls_cert_file, tls_key_file and place in /opt/vault/tls and chown it for vault
-* place your license in /opt/vault/config/license.hclic and chown it for vault
+* place your license in /opt/vault/config/license.hclic and **chown** it for vault
 
 sudo bash run_vault.sh --path-to-config ./vault_config.hcl --path-to-env-file ./vault.env
 
@@ -56,3 +60,18 @@ source /etc/profile
 ```
 
 ## For auto rotate secret in azure click [here](https://learn.microsoft.com/en-us/azure/key-vault/secrets/tutorial-rotation-dual?tabs=azure-cli)
+
+
+# Checks
+
+setenforce 0
+
+getenforce
+
+
+getcap /usr/local/bin/vault
+
+
+sudo chcon -t bin_t /usr/local/bin/vault
+sudo semanage fcontext -a -t bin_t /usr/local/bin/vault
+sudo restorecon -v /usr/local/bin/vault

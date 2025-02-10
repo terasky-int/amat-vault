@@ -148,6 +148,7 @@ EOF
 )
 
   local -r service_config=$(cat <<EOF
+  
 [Service]
 EnvironmentFile=$vault_config_file_or_dir/$VAULT_ENV_FILE
 User=$vault_user
@@ -199,6 +200,11 @@ EOF
 
 function start_vault {
   log_info "Reloading systemd config and starting Vault"
+  
+  sudo chcon -t bin_t /usr/local/bin/vault
+  sudo semanage fcontext -a -t bin_t /usr/local/bin/vault
+  sudo restorecon -v /usr/local/bin/vault
+
   sudo systemctl daemon-reload
   sudo systemctl enable vault.service
   sudo systemctl restart vault.service

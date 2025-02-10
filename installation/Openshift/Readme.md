@@ -16,6 +16,7 @@ oc create secret generic azure-vault-secret \
   --from-literal=VAULT_AZUREKEYVAULT_VAULT_NAME="<VAULT_AZUREKEYVAULT_VAULT_NAME>" \
   --from-literal=VAULT_AZUREKEYVAULT_KEY_NAME="<VAULT_AZUREKEYVAULT_KEY_NAME>"
 
+https://devopstronaut.com/hashicorp-vault-101-7-vault-auto-unseal-using-azure-key-vault-0d5d9afff1bc
 
 ---
 

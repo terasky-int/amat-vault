@@ -1,10 +1,10 @@
 storage "raft" {
-    path    = "/opt/vault/data"
+  path    = "/opt/vault/data"
 }
 
 listener "tcp" {
-  address         = "10.0.0.25:8200"
-  cluster_address = "10.0.0.25:8201"
+  address         = "10.0.0.54:8200"
+  cluster_address = "10.0.0.54:8201"
   tls_disable     = 1
 #   tls_cert_file   = "$tls_cert_file"
 #   tls_key_file    = "$tls_key_file"
@@ -14,22 +14,16 @@ listener "tcp" {
 
 }
 
-seal "azurekeyvault" {
-#   client_id      = "YOUR-APP-ID"
-#   client_secret  = "YOUR-APP-PASSWORD"
-#   tenant_id      = "YOUR-AZURE-TENANT-ID"
-#   vault_name     = "Test-vault-XXXXXX"
-#   key_name       = "generated-key"
-}
+seal "azurekeyvault" {}
 
 telemetry {
-   disable_hostname = true
-   prometheus_retention_time = "24h"
+  disable_hostname = true
+  prometheus_retention_time = "24h"
 }
 
 # HA settings
-api_addr      = "http://10.0.0.25:8200"
-cluster_addr  = "http://10.0.0.25:8201"
+api_addr      = "http://10.0.0.54:8200"
+cluster_addr  = "http://10.0.0.54:8201"
 license_path = "/opt/vault/config/license.hclic"
 ui            = true
 disable_mlock = true
