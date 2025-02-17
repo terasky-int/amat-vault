@@ -26,6 +26,7 @@ resource "vault_jwt_auth_backend_role" "role" {
   allowed_redirect_uris = [
     "${replace(var.vault_addr, ":8200", ":8250")}/ui/vault/auth/${vault_jwt_auth_backend.oidc.path}/oidc/callback",
     "${replace(var.vault_addr, ":8200", ":8250")}/oidc/callback",
+    "http://localhost:8250/oidc/callback"
   ]
 
   user_claim      = "sub"

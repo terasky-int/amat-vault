@@ -71,7 +71,19 @@ getenforce
 
 getcap /usr/local/bin/vault
 
-
+<!-- not used because selinux is disabled
 sudo chcon -t bin_t /usr/local/bin/vault
 sudo semanage fcontext -a -t bin_t /usr/local/bin/vault
-sudo restorecon -v /usr/local/bin/vault
+sudo restorecon -v /usr/local/bin/vault -->
+
+
+
+GET THEIR CONFIGRUTAION
+
+
+To make this run on the vm itself with out use the env var:
+
+sudo cp /Application/vault/tls/vault.ca /etc/pki/ca-trust/source/anchors/vault-ca.crt
+sudo update-ca-trust
+sudo trust list | grep vault-ca
+
