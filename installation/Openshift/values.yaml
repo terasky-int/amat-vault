@@ -189,7 +189,7 @@ server:
       config: |
         cluster_name = "vault-integrated-storage"
         disable_mlock = true
-        # enable_multiseal = true
+        enable_multiseal = true
 
         storage "raft" {
           path    = "/vault/data/"

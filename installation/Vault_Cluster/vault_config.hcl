@@ -4,7 +4,7 @@ license_path  = "/Application/vault/config/license.hclic"
 disable_mlock = true
 ui            = true
  
-# enable_multiseal = true
+enable_multiseal = true
  
 storage "raft" {
   node_id = "vault-node-1"
