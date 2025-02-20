@@ -2,11 +2,12 @@
 # Vault Audit
 #######################################
 
-module "vault_audit" {
-  source = "./modules/vault_audit"
+# For now wasn't used
+# module "vault_audit" {
+#   source = "./modules/vault_audit"
 
-  audit_devices = var.audit_devices
-}
+#   audit_devices = var.audit_devices
+# }
 
 #######################################
 # Vault OIDC
@@ -24,6 +25,8 @@ module "vault_oidc" {
   client_secret   = var.oidc_client_secret
   bound_audiences = var.oidc_bound_audiences
   roles           = var.oidc_roles
+
+  depends_on = [ vault_policy.policy ]
 }
 
 #######################################

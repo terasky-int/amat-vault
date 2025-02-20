@@ -1,5 +1,5 @@
 # Global Variables
-vault_addr = "http://127.0.0.1:8200"
+vault_addr = "https://mysm.amat.com:8200"
 
 # Audit Variables
 # audit_devices = [
@@ -33,17 +33,25 @@ vault_addr = "http://127.0.0.1:8200"
 
 # OIDC Variables
 oidc_client_id       = "hashicorppoc"
-oidc_client_secret   = "SecretHere"
+oidc_client_secret   = "MEpQvqbsqsx9NRmoQOupAsDKvnMvKbfN34vwFGJq5YG2OV82qaE5lhO3LqYwDITn"
 oidc_bound_audiences = ["hashicorppoc"]
 oidc_discovery_url   = "https://myloginqa.amat.com:8080"
 
+# URI we configured on their part
+# "GSLB_URL/ui/vault/auth/ping/oidc/callback",
+# "GSLB_URL/oidc/callback",
+
 oidc_roles = {
   admin = {
-    token_policies = ["root"]
-    bound_groups   = ["vault_admins"]
+    token_policies = ["admin-policy"]
+    bound_groups   = ["AMAT-APP-MySM-Administrators"]
   },
-  devs = {
-    token_policies = ["default"]
-    bound_groups   = ["vault_devs"]
+  operator = {
+    token_policies = ["operator-policy"]
+    bound_groups   = ["AMAT-APP-MySM-Operators"]
+  },
+  developer = {
+    token_policies = ["developer-policy"]
+    bound_groups   = ["AMAT-APP-MySM-Developers"]
   }
 }

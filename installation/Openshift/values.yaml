@@ -138,9 +138,29 @@ server:
     secretName: azure-vault-secret
     secretKey: VAULT_AZUREKEYVAULT_VAULT_NAME
 
-  # - envName: VAULT_AZUREKEYVAULT_KEY_NAME
-  #   secretName: azure-vault-secret
-  #   secretKey: VAULT_AZUREKEYVAULT_KEY_NAME
+  - envName: VAULT_AZUREKEYVAULT_KEY_NAME
+    secretName: azure-vault-secret
+    secretKey: VAULT_AZUREKEYVAULT_KEY_NAME
+
+  - envName: AZURE_TENANT_ID_secondary
+    secretName: azure-vault-secret
+    secretKey: AZURE_TENANT_ID2
+
+  - envName: AZURE_CLIENT_ID_secondary
+    secretName: azure-vault-secret
+    secretKey: AZURE_CLIENT_ID2
+
+  - envName: AZURE_CLIENT_SECRET_secondary
+    secretName: azure-vault-secret
+    secretKey: AZURE_CLIENT_SECRET2
+
+  - envName: VAULT_AZUREKEYVAULT_VAULT_NAME_secondary
+    secretName: azure-vault-secret
+    secretKey: VAULT_AZUREKEYVAULT_VAULT_NAME2
+
+  - envName: VAULT_AZUREKEYVAULT_KEY_NAME_secondary
+    secretName: azure-vault-secret
+    secretKey: VAULT_AZUREKEYVAULT_KEY_NAME2
 
 
   volumes:
@@ -169,7 +189,7 @@ server:
       config: |
         cluster_name = "vault-integrated-storage"
         disable_mlock = true
-        enable_multiseal = true
+        # enable_multiseal = true
 
         storage "raft" {
           path    = "/vault/data/"
@@ -216,18 +236,18 @@ server:
           key_name = "test-vault-key"
         }
 
-        seal "azurekeyvault" {
-          name = "secondary"
-          priority = "2"
-          key_name = "test-vault-key-2"
-        }
+        # seal "azurekeyvault" {
+        #   name = "secondary"
+        #   priority = "2"
+        #   key_name = "test-vault-key-2"
+        # }
 
         ui = true
 
-        # Configuration for enabling Prometheus metrics in your config.
         telemetry {
-          prometheus_retention_time = "30s"
-          disable_hostname = true
+          dogstatsd_addr = "localhost:8125"
+          enable_hostname_label = true
+          prometheus_retention_time = "0h"
         }
 
 

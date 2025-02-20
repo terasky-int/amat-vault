@@ -200,10 +200,6 @@ EOF
 
 function start_vault {
   log_info "Reloading systemd config and starting Vault"
-  
-  sudo chcon -t bin_t /usr/local/bin/vault
-  sudo semanage fcontext -a -t bin_t /usr/local/bin/vault
-  sudo restorecon -v /usr/local/bin/vault
 
   sudo systemctl daemon-reload
   sudo systemctl enable vault.service
@@ -219,7 +215,7 @@ function get_owner_of_path {
 function run {
   local path_to_config=""
   local path_to_env=""
-  local config_dir="/opt/vault/config"
+  local config_dir="/Application/vault/config"
   local bin_dir="/usr/local/bin"
   local log_level="$DEFAULT_LOG_LEVEL"
   local systemd_stdout=""
