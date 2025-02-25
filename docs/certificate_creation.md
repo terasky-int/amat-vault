@@ -19,15 +19,9 @@ DNS: Openshift Route URL
 DNS: Load Balancer URL
 IP Address: 127.0.0.1
 
-# Only required if performance replication is needed.  
-# During the initial installation, the Load Balancer IP is unknown, so the certificate must be created without it.  
-# Once the service is patched and the Load Balancer IP is assigned, generate a new certificate including the IP only if performance replication is required.  
-# For details, see [performance replication](./performance_replication.md).
-
-IP Address: <LoadBalancer Service IP for vault-active>
 ```
 
-After setting up the SANs, you should have the following **TLS certificate files**:  
+After setting up the SANs, Generate signed certificate. you should have the following **TLS certificate files**:  
 - **Private Key:** `vault.key`  
 - **Certificate:** `vault.crt`  
 - **CA Certificate:** `vault.ca`  
