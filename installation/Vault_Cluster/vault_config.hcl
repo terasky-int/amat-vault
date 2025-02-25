@@ -40,7 +40,8 @@ seal "azurekeyvault" {
 # }
 
 telemetry {
+  prometheus_retention_time = "0h"
+  disable_hostname = true
   dogstatsd_addr = "localhost:8125"
   enable_hostname_label = true
-  prometheus_retention_time = "0h"
 }
