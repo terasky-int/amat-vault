@@ -174,12 +174,12 @@ This message means that Vault is in the middle of a re-wrap operation. When you 
 Workaround for Stuck Re-wrap Operations
 To resolve this issue, you can temporarily disable the re-wrap safety check:
 
-Always take a backup of the secret before making changes:
+1. Always take a backup of the secret before making changes:
 ```bash
  oc get secret azure-vault-secret -o yaml > azure-vault-secret.yaml.bkp
 ```
 
-Edit the StatefulSet and add the environment variable:
+2. Edit the StatefulSet and add the environment variable:
 ```yaml
 spec:
   # ...
@@ -190,27 +190,27 @@ spec:
         # ...
         env:
         - name: VAULT_SEAL_REWRAP_SAFETY
-          value: disable
+          value: "disable"
 ```
 
-Delete all pods to apply the changes:
+3. Delete all pods to apply the changes:
 ```bash
  delete po vault-0 vault-1 vault-2
 ```
 
-Edit the secret with new variables (secret_id, key_name, etc.)
-Delete all pods again:
+4. Edit the secret with new variables (secret_id, key_name, etc.).   
+5. Delete all pods again:
 ```bash
  delete po vault-0 vault-1 vault-2
 ```
 
-Monitor the re-wrap process - wait until "fully_wrapped"s: true:
+6. Monitor the re-wrap process - wait until "fully_wrapped"s: true:
 ```bash
   vault read sys/seal-backend-status -format=json
 ```
 
-Edit the StatefulSet to remove the VAULT_SEAL_REWRAP_SAFETY environment variable
-Delete all pods one final time:
+7. Edit the StatefulSet to remove the VAULT_SEAL_REWRAP_SAFETY environment variable.   
+8. Delete all pods one final time:
 ```bash
  delete po vault-0 vault-1 vault-2
 ```
