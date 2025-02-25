@@ -1,7 +1,7 @@
 
 ### helm-values:
 
-```bash
+```yaml
   extraSecretEnvironmentVars:
   - envName: AZURE_TENANT_ID
     secretName: azure-vault-secret
