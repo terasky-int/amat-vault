@@ -1,6 +1,7 @@
 resource "vault_jwt_auth_backend" "oidc" {
-  description        = "Ping Identity OIDC"
-  path               = var.mount_path
+
+  description = "Ping Identity OIDC"
+  path        = var.mount_path
 
   type               = "oidc"
   oidc_discovery_url = var.discovery_url
@@ -17,6 +18,7 @@ resource "vault_jwt_auth_backend" "oidc" {
 }
 
 resource "vault_jwt_auth_backend_role" "role" {
+  
   for_each       = var.roles
 
   backend        = vault_jwt_auth_backend.oidc.path

@@ -32,14 +32,10 @@ vault_addr = "https://mysm.amat.com:8200"
 # ]
 
 # OIDC Variables
-oidc_client_id       = "hashicorppoc"
-oidc_client_secret   = "MEpQvqbsqsx9NRmoQOupAsDKvnMvKbfN34vwFGJq5YG2OV82qaE5lhO3LqYwDITn"
-oidc_bound_audiences = ["hashicorppoc"]
+oidc_client_id       = "FILLE_ME"
+oidc_client_secret   = "FILLE_ME"
+oidc_bound_audiences = ["SAME_AS_IN_oidc_client_id"]
 oidc_discovery_url   = "https://myloginqa.amat.com:8080"
-
-# URI we configured on their part
-# "GSLB_URL/ui/vault/auth/ping/oidc/callback",
-# "GSLB_URL/oidc/callback",
 
 oidc_roles = {
   admin = {
