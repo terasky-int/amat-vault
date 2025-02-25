@@ -176,11 +176,12 @@ To resolve this issue, you can temporarily disable the re-wrap safety check:
 
 Always take a backup of the secret before making changes:
 ```bash
- get secret azure-vault-secret -o yaml > azure-vault-secret.yaml.bkp
+ oc get secret azure-vault-secret -o yaml > azure-vault-secret.yaml.bkp
 ```
 
 Edit the StatefulSet and add the environment variable:
-yamlCopyspec:
+```yaml
+spec:
   # ...
   template:
     spec:
@@ -190,6 +191,7 @@ yamlCopyspec:
         env:
         - name: VAULT_SEAL_REWRAP_SAFETY
           value: disable
+```
 
 Delete all pods to apply the changes:
 ```bash
