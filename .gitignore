@@ -39,4 +39,4 @@ Thumbs.db
 # Vault License
 *.hclic
 
-installation/
+installation/*
