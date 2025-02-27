@@ -98,7 +98,7 @@ vault status
 ## **Certificate Update on Site B (VM-Based Deployment)**
 
 ### **1. Remove Old Certificates**
-Backup and delete the existing certificates:
+**Backup** and delete the existing certificates:
 
 ```bash
 rm -f /Application/vault/tls/*
