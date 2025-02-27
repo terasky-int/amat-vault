@@ -54,6 +54,9 @@ Key parameters to verify:
 - **Vault configurations** (storage, HA setup, security settings)
 
 ### **2. Install Vault Using Helm**
+
+Notice that the current values file is applicable for version 0.29.0.
+
 ```bash
 helm upgrade -i vault path_to_helm_chart -f your-values-file.yaml --namespace vault
 ```

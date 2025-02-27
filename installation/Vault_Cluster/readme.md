@@ -64,6 +64,7 @@ After running the installation script, configure the necessary **Vault configura
         chown vault:vault /Application/vault/tls/*
     ```
 
+   **Note**: For documantation about replacing a certificate look [here](../../docs/certificate_creation.md#certificate-update-on-site-b-vm-based-deployment).
 ---
 
 ### **Step 3: Start Vault Using the Run Script**  
