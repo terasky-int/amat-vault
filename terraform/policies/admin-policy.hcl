@@ -1,6 +1,16 @@
 #############################
 ### Vault Policy - Admin ####
 #############################
+# Explicitly deny all operations on the "master" user in userpass auth method
+path "auth/userpass/users/master" {
+  capabilities = ["deny"]
+}
+
+# Explicitly deny all operations on the "master-backup" user in userpass auth method
+path "auth/userpass/users/master-backup" {
+  capabilities = ["deny"]
+}
+
 
 # permit access to all sys backend configurations to administer Vault itself
 path "sys/*" {
@@ -80,4 +90,20 @@ path "pki/*" {
 # Full access to the Transit secrets engine (encryption-as-a-service)
 path "transit/*" {
   capabilities = ["create", "read", "update", "delete", "list"]
+}
+
+############## View all Secrets Engines ##################
+# Allow listing secrets in all KV secret engines
+path "+/data/*" {
+  capabilities = ["create", "read", "update", "delete", "list"]
+}
+
+# Allow listing secrets in all KV version 2 secret engines
+path "+/metadata/*" {
+  capabilities = ["create", "read", "update", "delete", "list"]
+}
+
+# Generic catch-all for other secret engines
+path "+/*" {
+  capabilities = ["create", "read", "list"]
 }
