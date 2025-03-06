@@ -21,10 +21,12 @@ module "vault_oidc" {
   discovery_url = var.oidc_discovery_url
   mount_path    = var.oidc_mount_path
 
-  client_id       = var.oidc_client_id
-  client_secret   = var.oidc_client_secret
-  bound_audiences = var.oidc_bound_audiences
-  roles           = var.oidc_roles
+  client_id         = var.oidc_client_id
+  client_secret     = var.oidc_client_secret
+  bound_audiences   = var.oidc_bound_audiences
+  roles             = var.oidc_roles
+  default_lease_ttl = var.default_lease_ttl
+  max_lease_ttl     = var.max_lease_ttl
 
   depends_on = [ vault_policy.policy ]
 }

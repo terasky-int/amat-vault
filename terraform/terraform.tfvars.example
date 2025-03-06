@@ -37,6 +37,9 @@ oidc_client_secret   = "FILLE_ME"
 oidc_bound_audiences = ["SAME_AS_IN_oidc_client_id"]
 oidc_discovery_url   = "https://myloginqa.amat.com:8080"
 
+max_lease_ttl     = "1h"
+default_lease_ttl = "1h"
+
 oidc_roles = {
   admin = {
     token_policies = ["admin-policy"]

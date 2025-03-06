@@ -58,6 +58,18 @@ variable "oidc_bound_audiences" {
   description = "A list of allowed token audiences"
 }
 
+variable "default_lease_ttl" {
+  type        = string
+  description = "Default lease TTL for Vault tokens"
+  default     = "768h"
+}
+
+variable "max_lease_ttl" {
+  type        = string
+  description = "Maximum lease TTL for Vault tokens"
+  default     = "768h"
+}
+
 variable "oidc_roles" {
   type        = map(any)
   default     = {}
